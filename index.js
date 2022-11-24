@@ -50,7 +50,15 @@ async function run () {
             const email = req.params.email;
             const query = {email};
             const user = await userCollection.findOne(query)
-            res.send({isAdmin: user?.role === 'admin'})
+            res.send({isAdmin: user?.role === 'Admin'})
+        })
+
+        //Get Seller User to Provide Access to Admin Only
+        app.get('/users/seller/:email', async (req, res) => {
+            const email = req.params.email;
+            const query = {email};
+            const user = await userCollection.findOne(query)
+            res.send({isSeller: user?.role === 'seller'})
         })
 
         //Store Modal Data Into Database
@@ -64,6 +72,13 @@ async function run () {
         app.post('/users', async(req, res) => {
             const user = req.body;
             const result = await userCollection.insertOne(user)
+            res.send(result)
+        })
+
+        //Store New Products
+        app.post('/addnewproduct', async(req, res) => {
+            const product = req.body;
+            const result = await productList.insertOne(product);
             res.send(result)
         })
     }
