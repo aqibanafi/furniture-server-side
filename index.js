@@ -22,7 +22,6 @@ async function run () {
         const productList = client.db('thePersonal').collection('productsData');
         const bookingCollection = client.db('thePersonal').collection('bookingCollection')
         const userCollection = client.db('thePersonal').collection('userCollection')
-        const myOrderList = client.db('thePersonal').collection('myOrderList')
 
         //Get All category List
         app.get('/categories', async(req, res) => {
@@ -96,6 +95,30 @@ async function run () {
             const query = {};
             const orders = await bookingCollection.find(query).toArray()
             res.send(orders)
+        })
+
+        //Find Products By Email for Showing Seller Dashboard
+        app.get('/myproducts/:email', async(req, res) => {
+            const email = req.params.email;
+            const query = {email}
+            const orders = await productList.find(query).toArray()
+            res.send(orders)
+        })
+
+        //Get All Buyers
+        app.get('/buyers', async (req, res) => {
+            const role = req.params.role;
+            const query = {role: 'Buyer'}
+            const user = await userCollection.find(query).toArray()
+           res.send(user)
+        })
+
+        //Get All Sellers
+        app.get('/sellers', async (req, res) => {
+            const role = req.params.role;
+            const query = {role: 'Seller'}
+            const user = await userCollection.find(query).toArray()
+           res.send(user)
         })
     }
     finally {
