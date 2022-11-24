@@ -38,6 +38,21 @@ async function run () {
             res.send(products);
         })
 
+        //Get User Detail
+        app.get('/users', async(req, res) => {
+            const query = {};
+            const getUser = await userCollection.find(query).toArray()
+            res.send(getUser)
+        })
+
+        //Get Admin User to Provide Access to Admin Only
+        app.get('/users/admin/:email', async (req, res) => {
+            const email = req.params.email;
+            const query = {email};
+            const user = await userCollection.findOne(query)
+            res.send({isAdmin: user?.role === 'admin'})
+        })
+
         //Store Modal Data Into Database
         app.post('/bookingdata', async(req, res) => {
             const booking = req.body;
