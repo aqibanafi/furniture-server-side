@@ -1,6 +1,6 @@
 [
     {
-        "category_id": "637e9e98987c7fcbddfc3f5a",
+        "category_id": "637ec057987c7fcbdd2421e9",
         "picture": "https://i.ibb.co/s3t3YwQ/Stanley-204-0.jpg",
         "name": "Mild Steel File Cabinet",
         "location": "Dhaka",
@@ -12,7 +12,7 @@
         
     },
     {
-        "category_id": "637e9e98987c7fcbddfc3f5e",
+        "category_id": "637ec057987c7fcbdd2421e9",
         "picture": "https://i.ibb.co/pLd9Ycb/hatil-bed.png",
         "name": "Mild Steel File Cabinet",
         "location": "Dhaka",
@@ -23,7 +23,7 @@
         "sellersName": "Abdul Kuddus"
     },
     {
-        "category_id": "637e9e98987c7fcbddfc3f5e",
+        "category_id": "637ec057987c7fcbdd2421e9",
         "picture": "https://i.ibb.co/pLd9Ycb/hatil-bed.png",
         "name": "Mild Steel File Cabinet",
         "location": "Dhaka",
@@ -34,7 +34,7 @@
         "sellersName": "Abdul Kuddus"
     },
     {
-        "category_id": "637e9e98987c7fcbddfc3f5e",
+        "category_id": "637ec057987c7fcbdd2421e9",
         "picture": "https://i.ibb.co/pLd9Ycb/hatil-bed.png",
         "name": "Mild Steel File Cabinet",
         "location": "Dhaka",
@@ -45,7 +45,7 @@
         "sellersName": "Abdul Kuddus"
     },
     {
-        "category_id": "637e9e98987c7fcbddfc3f5e",
+        "category_id": "637ec057987c7fcbdd2421e9",
         "picture": "https://i.ibb.co/pLd9Ycb/hatil-bed.png",
         "name": "Mild Steel File Cabinet",
         "location": "Dhaka",

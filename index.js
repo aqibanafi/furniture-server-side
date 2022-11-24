@@ -20,6 +20,7 @@ async function run () {
 
         const categoryList = client.db('thePersonal').collection('categoryList');
         const productList = client.db('thePersonal').collection('productsData');
+        const bookingCollection = client.db('thePersonal').collection('bookingCollection')
 
         //Get All category List
         app.get('/categories', async(req, res) => {
@@ -33,8 +34,14 @@ async function run () {
             const id = req.params.id;
             const query = {category_id: id};
             const products = await productList.find(query).toArray()
-            console.log(products)
-            res.send(products)
+            res.send(products);
+        })
+
+        //Store Modal Data Into Database
+        app.post('/bookingdata', async(req, res) => {
+            const booking = req.body;
+            const result = await bookingCollection.insertOne(booking)
+            res.send(result)
         })
     }
     finally {
