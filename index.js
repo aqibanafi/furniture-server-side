@@ -21,6 +21,7 @@ async function run () {
         const categoryList = client.db('thePersonal').collection('categoryList');
         const productList = client.db('thePersonal').collection('productsData');
         const bookingCollection = client.db('thePersonal').collection('bookingCollection')
+        const userCollection = client.db('thePersonal').collection('userCollection')
 
         //Get All category List
         app.get('/categories', async(req, res) => {
@@ -41,6 +42,13 @@ async function run () {
         app.post('/bookingdata', async(req, res) => {
             const booking = req.body;
             const result = await bookingCollection.insertOne(booking)
+            res.send(result)
+        })
+
+        //Store User Data
+        app.post('/users', async(req, res) => {
+            const user = req.body;
+            const result = await userCollection.insertOne(user)
             res.send(result)
         })
     }
