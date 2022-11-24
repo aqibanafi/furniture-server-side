@@ -53,6 +53,14 @@ async function run () {
             res.send({isAdmin: user?.role === 'Admin'})
         })
 
+        //Get Admin User to Provide Access to Admin Only
+        app.get('/users/buyer/:email', async (req, res) => {
+            const email = req.params.email;
+            const query = {email};
+            const user = await userCollection.findOne(query)
+            res.send({isBuyer: user?.role === 'Buyer'})
+        })
+
         //Get Seller User to Provide Access to Admin Only
         app.get('/users/seller/:email', async (req, res) => {
             const email = req.params.email;
