@@ -22,6 +22,7 @@ async function run () {
         const productList = client.db('thePersonal').collection('productsData');
         const bookingCollection = client.db('thePersonal').collection('bookingCollection')
         const userCollection = client.db('thePersonal').collection('userCollection')
+        const myOrderList = client.db('thePersonal').collection('myOrderList')
 
         //Get All category List
         app.get('/categories', async(req, res) => {
@@ -66,7 +67,7 @@ async function run () {
             const email = req.params.email;
             const query = {email};
             const user = await userCollection.findOne(query)
-            res.send({isSeller: user?.role === 'seller'})
+            res.send({isSeller: user?.role === 'Seller'})
         })
 
         //Store Modal Data Into Database
@@ -88,6 +89,13 @@ async function run () {
             const product = req.body;
             const result = await productList.insertOne(product);
             res.send(result)
+        })
+
+        //My Orders
+        app.get('/myorders', async(req, res) => {
+            const query = {};
+            const orders = await bookingCollection.find(query).toArray()
+            res.send(orders)
         })
     }
     finally {
