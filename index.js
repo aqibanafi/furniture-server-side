@@ -23,6 +23,7 @@ async function run () {
         const bookingCollection = client.db('thePersonal').collection('bookingCollection');
         const userCollection = client.db('thePersonal').collection('userCollection');
         const buyerWishList = client.db('thePersonal').collection('wishList');
+        const reportedProduct = client.db('thePersonal').collection('reportedProduct');
 
         //Get All category List
         app.get('/categories', async(req, res) => {
@@ -101,6 +102,13 @@ async function run () {
            res.send(user)
         })
 
+        //Get Wishlist Product to Display Buyer Dashbaord
+        app.get('/wishlist', async (req, res) => {
+            const query = {};
+            const wishListProducts = await buyerWishList.find(query).toArray()
+            res.send(wishListProducts)
+        })
+
         //Store Modal Data Into Database
         app.post('/bookingdata', async(req, res) => {
             const booking = req.body;
@@ -129,6 +137,15 @@ async function run () {
             const wishList = await buyerWishList.insertOne(query)
             res.send(wishList)
         })
+
+        //Make Product Reported
+        app.post('/reportedProducts', async (req, res) => {
+            const reportProduct = req.body;
+            const reported = await reportedProduct.insertOne(reportProduct);
+            res.send(reported);
+        })
+
+        
     }
     finally {
 
