@@ -103,10 +103,18 @@ async function run() {
         })
 
         //Get Wishlist Product to Display Buyer Dashbaord
-        app.get('/wishlist', async (req, res) => {
-            const query = {};
+        app.get('/wishlist/:email', async (req, res) => {
+            const email = req.params.email;
+            const query = { email: email };
             const wishListProducts = await buyerWishList.find(query).toArray()
             res.send(wishListProducts)
+        })
+
+        //Get Report
+        app.get('/reports', async (req, res) => {
+            const query = {};
+            const getReport = await reportedProduct.find(query).toArray();
+            res.send(getReport);
         })
 
         //Store Modal Data Into Database
@@ -131,15 +139,11 @@ async function run() {
         })
 
         //Add to Wish List
-        
-
-        app.put('/addtowishlist/:email', async(req, res) => {
+        app.put('/addtowishlist/:email', async (req, res) => {
             const id = req.params.id;
             const detail = req.body;
             const filter = { _id: ObjectId(id) }
             const email = req.params.email;
-            const getProductDetails = await productList.findOne(filter)
-            console.log(getProductDetails)
             const options = { upsert: true };
             const updateDoc = {
                 $set: {
@@ -149,6 +153,29 @@ async function run() {
             }
             const result = await buyerWishList.updateOne(filter, updateDoc, options)
             res.send(result);
+        })
+
+        //Edit product
+        app.patch('/myproducts/:id', async (req, res) => {
+            const id = req.params.id;
+            const product = req.body;
+            const query = { _id: ObjectId(id) }
+            const updatedDoc = {
+                $set: {
+                    name:product.name,
+                    picture: product.picture,
+                    location: product.location,
+                    resealablePrice: product.resealablePrice,
+                    originalPrice: product.originalPrice,
+                    yearOfUse: product.yearOfUse,
+                    postTime: product.postTime,
+                    sellersName: product.sellersName,
+                    email: product.email
+                }
+            }
+            console.log(updatedDoc)
+            const result = await productList.updateOne(query, updatedDoc)
+            res.send(result)
         })
 
         //Make Product Reported
