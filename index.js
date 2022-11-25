@@ -31,13 +31,16 @@ async function run() {
             const categories = await categoryList.find(query).toArray()
             res.send(categories);
         })
-
         //Get Products Under Specific Category
         app.get('/categories/:id', async (req, res) => {
             const id = req.params.id;
+            const status = req.params.status;
             const query = { category_id: id };
             const products = await productList.find(query).toArray()
-            res.send(products);
+            const soldProduct = products.filter(product => product.status === "Sold")
+            const filterProducts = products.filter(product => !soldProduct.includes(product))
+            res.send(filterProducts)
+
         })
 
         //Get User Detail
@@ -162,7 +165,7 @@ async function run() {
             const query = { _id: ObjectId(id) }
             const updatedDoc = {
                 $set: {
-                    name:product.name,
+                    name: product.name,
                     picture: product.picture,
                     location: product.location,
                     resealablePrice: product.resealablePrice,
@@ -178,11 +181,33 @@ async function run() {
             res.send(result)
         })
 
+        //Make Sold
+        app.patch('/makesold/:id', async (req, res) => {
+            const id = req.params.id;
+            const status = req.body;
+            const query = { _id: ObjectId(id) }
+            const updatedDoc = {
+                $set: {
+                    status: status.status
+                }
+            }
+            const result = await productList.updateOne(query, updatedDoc)
+            res.send(result)
+        })
+
         //Make Product Reported
         app.post('/reportedProducts', async (req, res) => {
             const reportProduct = req.body;
             const reported = await reportedProduct.insertOne(reportProduct);
             res.send(reported);
+        })
+
+        //Delete Products
+        app.delete('/deleteproduct/:id', async (req, res) => {
+            const id = req.params.id;
+            const filter = {_id: ObjectId(id)}
+            const result = await productList.deleteOne(filter)
+            res.send(result)
         })
     }
     finally {
