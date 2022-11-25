@@ -31,6 +31,14 @@ async function run() {
             const categories = await categoryList.find(query).toArray()
             res.send(categories);
         })
+
+        //ALL Products API
+        app.get('/allproducts', async (req, res) => {
+            const query = {}
+            const allProducts = await productList.find(query).toArray();
+            res.send(allProducts)
+        })
+
         //Get Products Under Specific Category
         app.get('/categories/:id', async (req, res) => {
             const id = req.params.id;
@@ -38,9 +46,10 @@ async function run() {
             const query = { category_id: id };
             const products = await productList.find(query).toArray()
             const soldProduct = products.filter(product => product.status === "Sold")
-            const filterProducts = products.filter(product => !soldProduct.includes(product))
+            const findWishList = products.filter(product => product.productType === "WishList")
+            console.log(findWishList)
+            const filterProducts = products.filter(product => !soldProduct.includes(product) && !findWishList.includes(product))
             res.send(filterProducts)
-
         })
 
         //Get User Detail
@@ -90,159 +99,168 @@ async function run() {
         })
 
         //Get All Buyers
-        app.get('/ ', async (req, res) => {
+        app.get('/buyers', async (req, res) => {
             const role = req.params.role;
             const query = { role: 'Buyer' }
             const user = await userCollection.find(query).toArray()
             res.send(user)
         })
 
-        //Get All Sellers
-        app.get('/sellers', async (req, res) => {
-            const role = req.params.role;
-            const query = { role: 'Seller' }
-            const user = await userCollection.find(query).toArray()
-            res.send(user)
-        })
+            //Get All Sellers
+            app.get('/sellers', async (req, res) => {
+                const role = req.params.role;
+                const query = { role: 'Seller' }
+                const user = await userCollection.find(query).toArray()
+                res.send(user)
+            })
 
-        //Get Wishlist Product to Display Buyer Dashbaord
-        app.get('/wishlist/:email', async (req, res) => {
-            const email = req.params.email;
-            const query = { email: email };
-            const wishListProducts = await buyerWishList.find(query).toArray()
-            res.send(wishListProducts)
-        })
+            //Get Wishlist Product to Display Buyer Dashbaord
+            app.get('/wishlist/:email', async (req, res) => {
+                const email = req.params.email;
+                const query = { email: email };
+                const wishListProducts = await buyerWishList.find(query).toArray()
+                res.send(wishListProducts)
+            })
 
-        //Get Report
-        app.get('/reports', async (req, res) => {
-            const query = {};
-            const getReport = await reportedProduct.find(query).toArray();
-            res.send(getReport);
-        })
+            //Get Report
+            app.get('/reports', async (req, res) => {
+                const query = {};
+                const getReport = await reportedProduct.find(query).toArray();
+                res.send(getReport);
+            })
 
-        //Store Modal Data Into Database
-        app.post('/bookingdata', async (req, res) => {
-            const booking = req.body;
-            const result = await bookingCollection.insertOne(booking)
-            res.send(result)
-        })
+            //Store Modal Data Into Database
+            app.post('/bookingdata', async (req, res) => {
+                const booking = req.body;
+                const result = await bookingCollection.insertOne(booking)
+                res.send(result)
+            })
 
-        //Store User Data
-        app.post('/users', async (req, res) => {
-            const user = req.body;
-            const result = await userCollection.insertOne(user)
-            res.send(result)
-        })
+            //Store User Data
+            app.post('/users', async (req, res) => {
+                const user = req.body;
+                const result = await userCollection.insertOne(user)
+                res.send(result)
+            })
 
-        //Store New Products
-        app.post('/addnewproduct', async (req, res) => {
-            const product = req.body;
-            const result = await productList.insertOne(product);
-            res.send(result)
-        })
+            //Store New Products
+            app.post('/addnewproduct', async (req, res) => {
+                const product = req.body;
+                const result = await productList.insertOne(product);
+                res.send(result)
+            })
 
-        //Add to Wish List
-        app.put('/addtowishlist/:email', async (req, res) => {
-            const id = req.params.id;
-            const wishList = req.body;
-            const filter = { _id: ObjectId(id) }
-            const email = req.params.email;
-            const options = { upsert: true };
-            const updateDoc = {
-                $set: {
-                    email: email,
-                    name: wishList.name,
-                    location: wishList.location,
-                    resalePrice: wishList.resealablePrice,
-                    officialPrice: wishList.originalPrice,
-                    yearUse: wishList.yearOfUse,
-                    postingTime: wishList.postTime,
-                    sellerName: wishList.sellersName,
-                    productType: "WishList"
+            //Add to Wish List
+            app.put('/addnewproduct/:email', async (req, res) => {
+                const id = req.params.id;
+                const wishList = req.body;
+                const filter = { _id: ObjectId(id) }
+                const email = req.params.email;
+                const options = { upsert: true };
+                const updateDoc = {
+                    $set: {
+                        email: email,
+                        name: wishList.name,
+                        location: wishList.location,
+                        resalePrice: wishList.resealablePrice,
+                        officialPrice: wishList.originalPrice,
+                        yearUse: wishList.yearOfUse,
+                        postingTime: wishList.postTime,
+                        sellerName: wishList.sellersName,
+                        productType: "WishList"
+                    }
                 }
-            }
-            const result = await buyerWishList.updateOne(filter, updateDoc, options)
-            res.send(result);
-        })
+                const resultProduct = await productList.updateOne(filter, updateDoc, options)
+                const resultWishList = await buyerWishList.updateOne(filter, updateDoc, options)
+                res.send({ resultProduct, resultWishList });
+            })
 
-        //Edit product
-        app.patch('/myproducts/:id', async (req, res) => {
-            const id = req.params.id;
-            const product = req.body;
-            const query = { _id: ObjectId(id) }
-            const updatedDoc = {
-                $set: {
-                    name: product.name,
-                    picture: product.picture,
-                    location: product.location,
-                    resealablePrice: product.resealablePrice,
-                    originalPrice: product.originalPrice,
-                    yearOfUse: product.yearOfUse,
-                    postTime: product.postTime,
-                    sellersName: product.sellersName,
-                    email: product.email
+            //Edit product
+            app.patch('/myproducts/:id', async (req, res) => {
+                const id = req.params.id;
+                const product = req.body;
+                const query = { _id: ObjectId(id) }
+                const updatedDoc = {
+                    $set: {
+                        name: product.name,
+                        picture: product.picture,
+                        location: product.location,
+                        resealablePrice: product.resealablePrice,
+                        originalPrice: product.originalPrice,
+                        yearOfUse: product.yearOfUse,
+                        postTime: product.postTime,
+                        sellersName: product.sellersName,
+                        email: product.email
+                    }
                 }
-            }
-            console.log(updatedDoc)
-            const result = await productList.updateOne(query, updatedDoc)
-            res.send(result)
-        })
+                console.log(updatedDoc)
+                const result = await productList.updateOne(query, updatedDoc)
+                res.send(result)
+            })
 
-        //Make Sold
-        app.patch('/makesold/:id', async (req, res) => {
-            const id = req.params.id;
-            const status = req.body;
-            const query = { _id: ObjectId(id) }
-            const updatedDoc = {
-                $set: {
-                    status: status.status
+            //Make Sold
+            app.patch('/makesold/:id', async (req, res) => {
+                const id = req.params.id;
+                const status = req.body;
+                const query = { _id: ObjectId(id) }
+                const updatedDoc = {
+                    $set: {
+                        status: status.status
+                    }
                 }
-            }
-            const result = await productList.updateOne(query, updatedDoc)
-            res.send(result)
-        })
+                const result = await productList.updateOne(query, updatedDoc)
+                res.send(result)
+            })
 
-        //Make Advertise
-        app.patch('/makeadvertise/:id', async (req, res) => {
-            const id = req.params.id;
-            const makeAdvertise = req.body;
-            const query = { _id: ObjectId(id) }
-            const updatedDoc = {
-                $set: {
-                    advertiseStatus: makeAdvertise.advertiseStatus
+            //Make Advertise
+            app.patch('/makeadvertise/:id', async (req, res) => {
+                const id = req.params.id;
+                const makeAdvertise = req.body;
+                const query = { _id: ObjectId(id) }
+                const updatedDoc = {
+                    $set: {
+                        advertiseStatus: makeAdvertise.advertiseStatus
+                    }
                 }
-            }
-            const result = await productList.updateOne(query, updatedDoc)
-            res.send(result)
-        })
+                const result = await productList.updateOne(query, updatedDoc)
+                res.send(result)
+            })
 
-        //Make Product Reported
-        app.post('/reportedProducts', async (req, res) => {
-            const reportProduct = req.body;
-            const reported = await reportedProduct.insertOne(reportProduct);
-            res.send(reported);
-        })
+            //Make Product Reported
+            app.post('/reportedProducts', async (req, res) => {
+                const reportProduct = req.body;
+                const reported = await reportedProduct.insertOne(reportProduct);
+                res.send(reported);
+            })
 
-        //Delete Products
-        app.delete('/deleteproduct/:id', async (req, res) => {
-            const id = req.params.id;
-            const filter = { _id: ObjectId(id) }
-            const result = await productList.deleteOne(filter)
-            res.send(result)
-        })
-    }
+            //Delete Products
+            app.delete('/deleteproduct/:id', async (req, res) => {
+                const id = req.params.id;
+                const filter = { _id: ObjectId(id) }
+                const result = await productList.deleteOne(filter)
+                res.send(result)
+            })
+
+            //User Delete
+            app.delete('/deleteuser/:id', async (req, res) => {
+                const id = req.params.id;
+                const filter = { _id: ObjectId(id) };
+                const result = await userCollection.deleteOne(filter)
+                res.send(result)
+            })
+        }
     finally {
 
+        }
     }
-}
 
 run()
-    .catch(error => console.error(error))
+        .catch(error => console.error(error))
 
-app.get('/', (req, res) => {
-    res.send("The Personal Server is Running")
-})
+    app.get('/', (req, res) => {
+        res.send("The Personal Server is Running")
+    })
 
-app.listen(port, () => {
-    console.log(`The Personal Server running on ${port}`)
-})
+    app.listen(port, () => {
+        console.log(`The Personal Server running on ${port}`)
+    })
