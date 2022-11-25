@@ -195,6 +195,20 @@ async function run() {
             res.send(result)
         })
 
+        //Make Advertise
+        app.patch('/makeadvertise/:id', async (req, res) => {
+            const id = req.params.id;
+            const makeAdvertise = req.body;
+            const query = { _id: ObjectId(id) }
+            const updatedDoc = {
+                $set: {
+                    advertiseStatus: makeAdvertise.advertiseStatus
+                }
+            }
+            const result = await productList.updateOne(query, updatedDoc)
+            res.send(result)
+        })
+
         //Make Product Reported
         app.post('/reportedProducts', async (req, res) => {
             const reportProduct = req.body;
@@ -205,7 +219,7 @@ async function run() {
         //Delete Products
         app.delete('/deleteproduct/:id', async (req, res) => {
             const id = req.params.id;
-            const filter = {_id: ObjectId(id)}
+            const filter = { _id: ObjectId(id) }
             const result = await productList.deleteOne(filter)
             res.send(result)
         })
