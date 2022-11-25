@@ -15,7 +15,7 @@ const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASSWORD}@clu
 const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology: true, serverApi: ServerApiVersion.v1 });
 
 //Mongodb Run Function
-async function run () {
+async function run() {
     try {
 
         const categoryList = client.db('thePersonal').collection('categoryList');
@@ -26,7 +26,7 @@ async function run () {
         const reportedProduct = client.db('thePersonal').collection('reportedProduct');
 
         //Get All category List
-        app.get('/categories', async(req, res) => {
+        app.get('/categories', async (req, res) => {
             const query = {};
             const categories = await categoryList.find(query).toArray()
             res.send(categories);
@@ -35,13 +35,13 @@ async function run () {
         //Get Products Under Specific Category
         app.get('/categories/:id', async (req, res) => {
             const id = req.params.id;
-            const query = {category_id: id};
+            const query = { category_id: id };
             const products = await productList.find(query).toArray()
             res.send(products);
         })
 
         //Get User Detail
-        app.get('/users', async(req, res) => {
+        app.get('/users', async (req, res) => {
             const query = {};
             const getUser = await userCollection.find(query).toArray()
             res.send(getUser)
@@ -50,38 +50,38 @@ async function run () {
         //Get Admin User to Provide Access to Admin Only
         app.get('/users/admin/:email', async (req, res) => {
             const email = req.params.email;
-            const query = {email};
+            const query = { email };
             const user = await userCollection.findOne(query)
-            res.send({isAdmin: user?.role === 'Admin'})
+            res.send({ isAdmin: user?.role === 'Admin' })
         })
 
         //Get Admin User to Provide Access to Admin Only
         app.get('/users/buyer/:email', async (req, res) => {
             const email = req.params.email;
-            const query = {email};
+            const query = { email };
             const user = await userCollection.findOne(query)
-            res.send({isBuyer: user?.role === 'Buyer'})
+            res.send({ isBuyer: user?.role === 'Buyer' })
         })
 
         //Get Seller User to Provide Access to Admin Only
         app.get('/users/seller/:email', async (req, res) => {
             const email = req.params.email;
-            const query = {email};
+            const query = { email };
             const user = await userCollection.findOne(query)
-            res.send({isSeller: user?.role === 'Seller'})
+            res.send({ isSeller: user?.role === 'Seller' })
         })
 
         //My Orders
-        app.get('/myorders', async(req, res) => {
+        app.get('/myorders', async (req, res) => {
             const query = {};
             const orders = await bookingCollection.find(query).toArray()
             res.send(orders)
         })
 
         //Find Products By Email for Showing Seller Dashboard
-        app.get('/myproducts/:email', async(req, res) => {
+        app.get('/myproducts/:email', async (req, res) => {
             const email = req.params.email;
-            const query = {email}
+            const query = { email }
             const orders = await productList.find(query).toArray()
             res.send(orders)
         })
@@ -89,17 +89,17 @@ async function run () {
         //Get All Buyers
         app.get('/ ', async (req, res) => {
             const role = req.params.role;
-            const query = {role: 'Buyer'}
+            const query = { role: 'Buyer' }
             const user = await userCollection.find(query).toArray()
-           res.send(user)
+            res.send(user)
         })
 
         //Get All Sellers
         app.get('/sellers', async (req, res) => {
             const role = req.params.role;
-            const query = {role: 'Seller'}
+            const query = { role: 'Seller' }
             const user = await userCollection.find(query).toArray()
-           res.send(user)
+            res.send(user)
         })
 
         //Get Wishlist Product to Display Buyer Dashbaord
@@ -110,32 +110,45 @@ async function run () {
         })
 
         //Store Modal Data Into Database
-        app.post('/bookingdata', async(req, res) => {
+        app.post('/bookingdata', async (req, res) => {
             const booking = req.body;
             const result = await bookingCollection.insertOne(booking)
             res.send(result)
         })
 
         //Store User Data
-        app.post('/users', async(req, res) => {
+        app.post('/users', async (req, res) => {
             const user = req.body;
             const result = await userCollection.insertOne(user)
             res.send(result)
         })
 
         //Store New Products
-        app.post('/addnewproduct', async(req, res) => {
+        app.post('/addnewproduct', async (req, res) => {
             const product = req.body;
             const result = await productList.insertOne(product);
             res.send(result)
         })
 
         //Add to Wish List
-        app.post('/addtowishlist/:id', async(req, res) => {
+        
+
+        app.put('/addtowishlist/:email', async(req, res) => {
             const id = req.params.id;
-            const query = {_id :ObjectId(id)}
-            const wishList = await buyerWishList.insertOne(query)
-            res.send(wishList)
+            const detail = req.body;
+            const filter = { _id: ObjectId(id) }
+            const email = req.params.email;
+            const getProductDetails = await productList.findOne(filter)
+            console.log(getProductDetails)
+            const options = { upsert: true };
+            const updateDoc = {
+                $set: {
+                    email: email,
+                    detail
+                }
+            }
+            const result = await buyerWishList.updateOne(filter, updateDoc, options)
+            res.send(result);
         })
 
         //Make Product Reported
@@ -144,8 +157,6 @@ async function run () {
             const reported = await reportedProduct.insertOne(reportProduct);
             res.send(reported);
         })
-
-        
     }
     finally {
 
@@ -153,7 +164,7 @@ async function run () {
 }
 
 run()
-.catch(error => console.error(error))
+    .catch(error => console.error(error))
 
 app.get('/', (req, res) => {
     res.send("The Personal Server is Running")
