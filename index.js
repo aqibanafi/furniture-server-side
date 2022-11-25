@@ -144,14 +144,21 @@ async function run() {
         //Add to Wish List
         app.put('/addtowishlist/:email', async (req, res) => {
             const id = req.params.id;
-            const detail = req.body;
+            const wishList = req.body;
             const filter = { _id: ObjectId(id) }
             const email = req.params.email;
             const options = { upsert: true };
             const updateDoc = {
                 $set: {
                     email: email,
-                    detail
+                    name: wishList.name,
+                    location: wishList.location,
+                    resalePrice: wishList.resealablePrice,
+                    officialPrice: wishList.originalPrice,
+                    yearUse: wishList.yearOfUse,
+                    postingTime: wishList.postTime,
+                    sellerName: wishList.sellersName,
+                    productType: "WishList"
                 }
             }
             const result = await buyerWishList.updateOne(filter, updateDoc, options)
