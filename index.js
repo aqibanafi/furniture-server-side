@@ -20,8 +20,9 @@ async function run () {
 
         const categoryList = client.db('thePersonal').collection('categoryList');
         const productList = client.db('thePersonal').collection('productsData');
-        const bookingCollection = client.db('thePersonal').collection('bookingCollection')
-        const userCollection = client.db('thePersonal').collection('userCollection')
+        const bookingCollection = client.db('thePersonal').collection('bookingCollection');
+        const userCollection = client.db('thePersonal').collection('userCollection');
+        const buyerWishList = client.db('thePersonal').collection('wishList');
 
         //Get All category List
         app.get('/categories', async(req, res) => {
@@ -69,6 +70,37 @@ async function run () {
             res.send({isSeller: user?.role === 'Seller'})
         })
 
+        //My Orders
+        app.get('/myorders', async(req, res) => {
+            const query = {};
+            const orders = await bookingCollection.find(query).toArray()
+            res.send(orders)
+        })
+
+        //Find Products By Email for Showing Seller Dashboard
+        app.get('/myproducts/:email', async(req, res) => {
+            const email = req.params.email;
+            const query = {email}
+            const orders = await productList.find(query).toArray()
+            res.send(orders)
+        })
+
+        //Get All Buyers
+        app.get('/ ', async (req, res) => {
+            const role = req.params.role;
+            const query = {role: 'Buyer'}
+            const user = await userCollection.find(query).toArray()
+           res.send(user)
+        })
+
+        //Get All Sellers
+        app.get('/sellers', async (req, res) => {
+            const role = req.params.role;
+            const query = {role: 'Seller'}
+            const user = await userCollection.find(query).toArray()
+           res.send(user)
+        })
+
         //Store Modal Data Into Database
         app.post('/bookingdata', async(req, res) => {
             const booking = req.body;
@@ -90,35 +122,12 @@ async function run () {
             res.send(result)
         })
 
-        //My Orders
-        app.get('/myorders', async(req, res) => {
-            const query = {};
-            const orders = await bookingCollection.find(query).toArray()
-            res.send(orders)
-        })
-
-        //Find Products By Email for Showing Seller Dashboard
-        app.get('/myproducts/:email', async(req, res) => {
-            const email = req.params.email;
-            const query = {email}
-            const orders = await productList.find(query).toArray()
-            res.send(orders)
-        })
-
-        //Get All Buyers
-        app.get('/buyers', async (req, res) => {
-            const role = req.params.role;
-            const query = {role: 'Buyer'}
-            const user = await userCollection.find(query).toArray()
-           res.send(user)
-        })
-
-        //Get All Sellers
-        app.get('/sellers', async (req, res) => {
-            const role = req.params.role;
-            const query = {role: 'Seller'}
-            const user = await userCollection.find(query).toArray()
-           res.send(user)
+        //Add to Wish List
+        app.post('/addtowishlist/:id', async(req, res) => {
+            const id = req.params.id;
+            const query = {_id :ObjectId(id)}
+            const wishList = await buyerWishList.insertOne(query)
+            res.send(wishList)
         })
     }
     finally {
