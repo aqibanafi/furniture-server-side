@@ -15,6 +15,24 @@ app.use(express.json());
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASSWORD}@cluster0.2mjnncj.mongodb.net/?retryWrites=true&w=majority`;
 const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology: true, serverApi: ServerApiVersion.v1 });
 
+function verifyJWT(req, res, next) {
+
+    const authHeader = req.headers.authorization;
+    if (!authHeader) {
+        return res.status(401).send('unauthorized access');
+    }
+
+    const token = authHeader.split(' ')[1];
+
+    jwt.verify(token, process.env.ACCESS_TOKEN, function (err, decoded) {
+        if (err) {
+            return res.status(403).send({ message: 'forbidden access' })
+        }
+        req.decoded = decoded;
+        next();
+    })
+}
+
 //Mongodb Run Function
 async function run() {
     try {
@@ -25,6 +43,43 @@ async function run() {
         const userCollection = client.db('thePersonal').collection('userCollection');
         const buyerWishList = client.db('thePersonal').collection('wishList');
         const reportedProduct = client.db('thePersonal').collection('reportedProduct');
+        const paymentData = client.db('thePersonal').collection('paymentData');
+
+        // NOTE: make sure you use verifyAdmin after verifyJWT
+        const verifyAdmin = async (req, res, next) => {
+            const decodedEmail = req.decoded.email;
+            const query = { email: decodedEmail };
+            const user = await userCollection.findOne(query);
+
+            if (user?.role !== 'Admin') {
+                return res.status(403).send({ message: 'forbidden access' })
+            }
+            next();
+        }
+
+        // NOTE: make sure you use verifyBuyer after verifyJWT
+        const verifyBuyer = async (req, res, next) => {
+            const decodedEmail = req.decoded.email;
+            const query = { email: decodedEmail };
+            const user = await userCollection.findOne(query);
+
+            if (user?.role !== 'Buyer') {
+                return res.status(403).send({ message: 'forbidden access' })
+            }
+            next();
+        }
+
+        // NOTE: make sure you use verifySeller after verifyJWT
+        const verifySeller = async (req, res, next) => {
+            const decodedEmail = req.decoded.email;
+            const query = { email: decodedEmail };
+            const user = await userCollection.findOne(query);
+
+            if (user?.role !== 'Seller') {
+                return res.status(403).send({ message: 'forbidden access' })
+            }
+            next();
+        }
 
         //Payment API
         app.post('/create-payment-intent', async (req, res) => {
@@ -61,7 +116,6 @@ async function run() {
         //Get Products Under Specific Category
         app.get('/categories/:id', async (req, res) => {
             const id = req.params.id;
-            const status = req.params.status;
             const query = { category_id: id };
             const products = await productList.find(query).toArray()
             const soldProduct = products.filter(product => product.status === "Sold")
@@ -103,15 +157,16 @@ async function run() {
         })
 
         //My Orders
-        app.get('/myorders', async (req, res) => {
-            const query = {};
-            const orders = await bookingCollection.find(query).toArray()
-            res.send(orders)
+        app.get('/myorders/:email', async (req, res) => {
+            const email = req.params.email;
+            const query = {email: email};
+            const myOrders = await bookingCollection.find(query).toArray();
+            res.send(myOrders)
         })
 
         //Get Advertise Products
         app.get('/advertise', async (req, res) => {
-            const query = { };
+            const query = {};
             const products = await productList.find(query).toArray()
             const advertiseProduct = products.filter(product => product.advertiseStatus === "Advertised")
             const filterProducts = products.filter(product => advertiseProduct.includes(product))
@@ -173,6 +228,18 @@ async function run() {
             res.send(getReport);
         })
 
+        //JWT API
+        app.get('/jwt', async (req, res) => {
+            const email = req.query.email;
+            const query = { email: email };
+            const user = await usersCollection.findOne(query);
+            if (user) {
+                const token = jwt.sign({ email }, process.env.ACCESS_TOKEN, { expiresIn: '1d' })
+                return res.send({ accessToken: token });
+            }
+            res.status(403).send({ accessToken: '' })
+        });
+
         //Store Modal Data Into Database
         app.post('/bookingdata', async (req, res) => {
             const booking = req.body;
@@ -192,6 +259,13 @@ async function run() {
             const product = req.body;
             const result = await productList.insertOne(product);
             res.send(result)
+        })
+
+        //Store Payment Data
+        app.post('/payment', async(req, res) => {
+            const payment = req.body;
+            const result = await paymentData.insertOne(payment);
+            res.send(result);
         })
 
         //Add to Wish List
