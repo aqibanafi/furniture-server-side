@@ -109,6 +109,15 @@ async function run() {
             res.send(orders)
         })
 
+        //Get Advertise Products
+        app.get('/advertise', async (req, res) => {
+            const query = { };
+            const products = await productList.find(query).toArray()
+            const advertiseProduct = products.filter(product => product.advertiseStatus === "Advertised")
+            const filterProducts = products.filter(product => advertiseProduct.includes(product))
+            res.send(filterProducts)
+        })
+
         //Get Booking for Payment
         app.get('/bookings/:id', async (req, res) => {
             const id = req.params.id;
@@ -139,6 +148,14 @@ async function run() {
             const query = { role: 'Seller' }
             const user = await userCollection.find(query).toArray()
             res.send(user)
+        })
+
+        //Get Single Seller
+        app.get('/seller/:email', async (req, res) => {
+            const email = req.params.email;
+            const query = { email: email }
+            const getUser = await userCollection.findOne(query)
+            res.send(getUser)
         })
 
         //Get Wishlist Product to Display Buyer Dashbaord
@@ -274,6 +291,20 @@ async function run() {
             const filter = { _id: ObjectId(id) };
             const result = await userCollection.deleteOne(filter)
             res.send(result)
+        })
+
+        //Seller Verify
+        app.patch('/sellerverify/:id', async (req, res) => {
+            const id = req.params.id;
+            const verifyStatus = req.body;
+            const query = { _id: ObjectId(id) }
+            const updateDoc = {
+                $set: {
+                    verify: verifyStatus.verify
+                }
+            }
+            const result = await userCollection.updateOne(query, updateDoc)
+            res.send(result);
         })
 
     }
