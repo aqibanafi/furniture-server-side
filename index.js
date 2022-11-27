@@ -148,7 +148,7 @@ async function run() {
         })
 
         //Get Seller User to Provide Access to Admin Only
-        app.get('/users/seller/:email', async (req, res) => {
+        app.get('/users/seller/:email', verifyJWT, async (req, res) => {
             const email = req.params.email;
             const query = { email };
             const user = await userCollection.findOne(query)
@@ -230,17 +230,12 @@ async function run() {
             res.send(getReport);
         })
 
-        //JWT API
-        app.get('/jwt', async (req, res) => {
-            const email = req.query.email;
-            const query = { email: email };
-            const user = await usersCollection.findOne(query);
-            if (user) {
-                const token = jwt.sign({ email }, process.env.ACCESS_TOKEN, { expiresIn: '1d' })
-                return res.send({ accessToken: token });
-            }
-            res.status(403).send({ accessToken: '' })
-        });
+        //JWT Token
+        app.post('/jwt', (req, res) => {
+            const user = req.body;
+            const token = jwt.sign(user, process.env.ACCESS_TOKEN, { expiresIn: '7d' })
+            res.send({ token })
+        })
 
         //Store Modal Data Into Database
         app.post('/bookingdata', async (req, res) => {
@@ -250,7 +245,7 @@ async function run() {
         })
 
         //Store User Data
-        app.post('/users', async (req, res) => {
+        app.post('/users', verifyJWT, async (req, res) => {
             const user = req.body;
             const result = await userCollection.insertOne(user)
             res.send(result)
