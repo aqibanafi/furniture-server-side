@@ -108,7 +108,7 @@ async function run() {
         })
 
         //ALL Products API
-        app.get('/allproducts', async (req, res) => {
+        app.get('/allproducts', verifyJWT, verifyAdmin, async (req, res) => {
             const query = {}
             const allProducts = await productList.find(query).toArray();
             res.send(allProducts)
@@ -192,7 +192,7 @@ async function run() {
         })
 
         //Get All Buyers
-        app.get('/buyers', async (req, res) => {
+        app.get('/buyers', verifyJWT, verifyAdmin, async (req, res) => {
             const role = req.params.role;
             const query = { role: 'Buyer' }
             const user = await userCollection.find(query).toArray()
@@ -200,7 +200,7 @@ async function run() {
         })
 
         //Get All Sellers
-        app.get('/sellers', async (req, res) => {
+        app.get('/sellers', verifyJWT, verifyAdmin, async (req, res) => {
             const role = req.params.role;
             const query = { role: 'Seller' }
             const user = await userCollection.find(query).toArray()
@@ -225,7 +225,7 @@ async function run() {
         })
 
         //Get Report
-        app.get('/reports', async (req, res) => {
+        app.get('/reports', verifyJWT, verifyAdmin, async (req, res) => {
             const query = {};
             const getReport = await reportedProduct.find(query).toArray();
             res.send(getReport);
@@ -260,7 +260,7 @@ async function run() {
         })
 
         //Store New Products
-        app.post('/addnewproduct', async (req, res) => {
+        app.post('/addnewproduct', verifyJWT, verifySeller, async (req, res) => {
             const product = req.body;
             const result = await productList.insertOne(product);
             res.send(result);
@@ -307,7 +307,7 @@ async function run() {
         })
 
         //Edit product
-        app.patch('/myproducts/:id', async (req, res) => {
+        app.patch('/myproducts/:id', verifyJWT, verifySeller, async (req, res) => {
             const id = req.params.id;
             const product = req.body;
             const query = { _id: ObjectId(id) }
@@ -330,7 +330,7 @@ async function run() {
         })
 
         //Make Sold
-        app.patch('/makesold/:id', async (req, res) => {
+        app.patch('/makesold/:id', verifyJWT, verifySeller, async (req, res) => {
             const id = req.params.id;
             const status = req.body;
             const query = { _id: ObjectId(id) }
@@ -344,7 +344,7 @@ async function run() {
         })
 
         //Make Advertise
-        app.patch('/makeadvertise/:id', async (req, res) => {
+        app.patch('/makeadvertise/:id', verifyJWT, verifySeller, async (req, res) => {
             const id = req.params.id;
             const makeAdvertise = req.body;
             const query = { _id: ObjectId(id) }
@@ -387,7 +387,7 @@ async function run() {
         })
 
         //User Delete
-        app.delete('/deleteuser/:id', async (req, res) => {
+        app.delete('/deleteuser/:id', verifyJWT, verifyAdmin, async (req, res) => {
             const id = req.params.id;
             const filter = { _id: ObjectId(id) };
             const result = await userCollection.deleteOne(filter)
@@ -395,7 +395,7 @@ async function run() {
         })
 
         //Seller Verify
-        app.patch('/sellerverify/:id', async (req, res) => {
+        app.patch('/sellerverify/:id', verifyJWT, verifyAdmin, async (req, res) => {
             const id = req.params.id;
             const verifyStatus = req.body;
             const query = { _id: ObjectId(id) }
