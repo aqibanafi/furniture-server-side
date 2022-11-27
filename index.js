@@ -120,8 +120,7 @@ async function run() {
             const products = await productList.find(query).toArray()
             const soldProduct = products.filter(product => product.status === "Sold")
             const findWishList = products.filter(product => product.productType === "WishList")
-            console.log(findWishList)
-            const filterProducts = products.filter(product => !soldProduct.includes(product) && !findWishList.includes(product))
+            const filterProducts = products.filter(product => !soldProduct.includes(product))
             res.send(filterProducts)
         })
 
@@ -220,6 +219,7 @@ async function run() {
             const email = req.params.email;
             const query = { email: email };
             const wishListProducts = await buyerWishList.find(query).toArray()
+            console.log(wishListProducts)
             res.send(wishListProducts)
         })
 
@@ -271,11 +271,13 @@ async function run() {
         })
 
         //Add to Wish List
-        app.put('/addnewproduct/:email', async (req, res) => {
+        app.put('/addwishlist/:email', async (req, res) => {
             const id = req.params.id;
+            console.log(id)
             const wishList = req.body;
             const filter = { _id: ObjectId(id) }
             const email = req.params.email;
+            console.log(email)
             const options = { upsert: true };
             const updateDoc = {
                 $set: {
@@ -290,9 +292,8 @@ async function run() {
                     productType: "WishList"
                 }
             }
-            const resultProduct = await productList.updateOne(filter, updateDoc, options)
             const resultWishList = await buyerWishList.updateOne(filter, updateDoc, options)
-            res.send({ resultProduct, resultWishList });
+            res.send(resultWishList);
         })
 
         //Edit product
@@ -340,6 +341,20 @@ async function run() {
             const updatedDoc = {
                 $set: {
                     advertiseStatus: makeAdvertise.advertiseStatus
+                }
+            }
+            const result = await productList.updateOne(query, updatedDoc)
+            res.send(result)
+        })
+
+        //Add Wishlist
+        app.patch('/addwishlist/:email', async (req, res) => {
+            const email = req.params.email;
+            const makewishlist = req.body;
+            const query = { email: email }
+            const updatedDoc = {
+                $set: {
+                    wishList: makewishlist.wishListStatus
                 }
             }
             const result = await productList.updateOne(query, updatedDoc)
