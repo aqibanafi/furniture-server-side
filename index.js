@@ -114,9 +114,9 @@ async function run() {
         })
 
         //Get Products Under Specific Category
-        app.get('/categories/:id', async (req, res) => {
-            const id = req.params.id;
-            const query = { category_id: id };
+        app.get('/categories/:name', async (req, res) => {
+            const name = req.params.name;
+            const query = { category: name };
             const products = await productList.find(query).toArray()
             const soldProduct = products.filter(product => product.status === "Sold")
             const findWishList = products.filter(product => product.productType === "WishList")
@@ -159,7 +159,7 @@ async function run() {
         //My Orders
         app.get('/myorders/:email', async (req, res) => {
             const email = req.params.email;
-            const query = {email: email};
+            const query = { email: email };
             const myOrders = await bookingCollection.find(query).toArray();
             res.send(myOrders)
         })
@@ -169,8 +169,10 @@ async function run() {
             const query = {};
             const products = await productList.find(query).toArray()
             const advertiseProduct = products.filter(product => product.advertiseStatus === "Advertised")
+            const soldProduct = products.filter(product => product.status === "Sold")
             const filterProducts = products.filter(product => advertiseProduct.includes(product))
-            res.send(filterProducts)
+            const getFinalProduct = filterProducts.filter(product => !soldProduct.includes(product))
+            res.send(getFinalProduct)
         })
 
         //Get Booking for Payment
@@ -258,11 +260,11 @@ async function run() {
         app.post('/addnewproduct', async (req, res) => {
             const product = req.body;
             const result = await productList.insertOne(product);
-            res.send(result)
+            res.send(result);
         })
 
         //Store Payment Data
-        app.post('/payment', async(req, res) => {
+        app.post('/payment', async (req, res) => {
             const payment = req.body;
             const result = await paymentData.insertOne(payment);
             res.send(result);
