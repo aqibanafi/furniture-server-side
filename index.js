@@ -44,6 +44,7 @@ async function run() {
         const buyerWishList = client.db('thePersonal').collection('wishList');
         const reportedProduct = client.db('thePersonal').collection('reportedProduct');
         const paymentData = client.db('thePersonal').collection('paymentData');
+        const reviewCollection = client.db('thePersonal').collection('reviews')
 
         // NOTE: make sure you use verifyAdmin after verifyJWT
         const verifyAdmin = async (req, res, next) => {
@@ -148,7 +149,7 @@ async function run() {
         })
 
         //Get Seller User to Provide Access to Admin Only
-        app.get('/users/seller/:email', verifyJWT, async (req, res) => {
+        app.get('/users/seller/:email', async (req, res) => {
             const email = req.params.email;
             const query = { email };
             const user = await userCollection.findOne(query)
@@ -156,7 +157,7 @@ async function run() {
         })
 
         //My Orders
-        app.get('/myorders/:email', async (req, res) => {
+        app.get('/myorders/:email', verifyJWT, verifySeller, async (req, res) => {
             const email = req.params.email;
             const query = { email: email };
             const myOrders = await bookingCollection.find(query).toArray();
@@ -230,6 +231,13 @@ async function run() {
             res.send(getReport);
         })
 
+        //Get Review
+        app.get('/reviews', async (req, res) => {
+            const query = {}
+            const getReview = await reviewCollection.find(query).toArray()
+            res.send(getReview)
+        })
+
         //JWT Token
         app.post('/jwt', (req, res) => {
             const user = req.body;
@@ -262,6 +270,13 @@ async function run() {
         app.post('/payment', async (req, res) => {
             const payment = req.body;
             const result = await paymentData.insertOne(payment);
+            res.send(result);
+        })
+
+        //Post Review
+        app.post('/reviews', async (req, res) => {
+            const review = req.body;
+            const result = await reviewCollection.insertOne(review)
             res.send(result);
         })
 
