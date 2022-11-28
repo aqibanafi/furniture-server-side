@@ -83,7 +83,7 @@ async function run() {
         }
 
         //Payment API
-        app.post('/create-payment-intent', async (req, res) => {
+        app.post('/create-payment-intent', verifyJWT, verifyBuyer, async (req, res) => {
             const product = req.body;
             const price = parseInt(product.price.price);
             const amount = price * 100;
@@ -132,7 +132,7 @@ async function run() {
         })
 
         //Get Admin User to Provide Access to Admin Only
-        app.get('/users/admin/:email', async (req, res) => {
+        app.get('/users/admin/:email', verifyJWT, verifyAdmin, async (req, res) => {
             const email = req.params.email;
             const query = { email };
             const user = await userCollection.findOne(query)
@@ -140,7 +140,7 @@ async function run() {
         })
 
         //Get Admin User to Provide Access to Admin Only
-        app.get('/users/buyer/:email', async (req, res) => {
+        app.get('/users/buyer/:email', verifyJWT, verifyBuyer, async (req, res) => {
             const email = req.params.email;
             const query = { email };
             const user = await userCollection.findOne(query)
@@ -148,7 +148,7 @@ async function run() {
         })
 
         //Get Seller User to Provide Access to Seller Only
-        app.get('/users/seller/:email', async (req, res) => {
+        app.get('/users/seller/:email', verifyJWT, verifySeller, async (req, res) => {
             const email = req.params.email;
             const query = { email };
             const user = await userCollection.findOne(query)
@@ -278,7 +278,7 @@ async function run() {
         })
 
         //Post Review
-        app.post('/reviews', async (req, res) => {
+        app.post('/reviews', verifyJWT, verifyBuyer, async (req, res) => {
             const review = req.body;
             const result = await reviewCollection.insertOne(review)
             res.send(result);
