@@ -1,4 +1,4 @@
-const express = require('express');
+const express = require('express')
 const cors = require('cors');
 const jwt = require('jsonwebtoken');
 const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
@@ -246,14 +246,14 @@ async function run() {
         })
 
         //Store Modal Data Into Database
-        app.post('/bookingdata', async (req, res) => {
+        app.post('/bookingdata', verifyJWT, verifyBuyer, async (req, res) => {
             const booking = req.body;
             const result = await bookingCollection.insertOne(booking)
             res.send(result)
         })
 
         //Store User Data
-        app.post('/users', verifyJWT, async (req, res) => {
+        app.post('/users', async (req, res) => {
             const user = req.body;
             const result = await userCollection.insertOne(user)
             res.send(result)
@@ -281,7 +281,7 @@ async function run() {
         })
 
         //Add to Wish List
-        app.put('/addwishlist/:email', async (req, res) => {
+        app.put('/addwishlist/:email', verifyJWT, verifyBuyer, async (req, res) => {
             const id = req.params.id;
             console.log(id)
             const wishList = req.body;
@@ -372,7 +372,7 @@ async function run() {
         })
 
         //Make Product Reported
-        app.post('/reportedProducts', async (req, res) => {
+        app.post('/reportedProducts', verifyJWT, verifyBuyer, async (req, res) => {
             const reportProduct = req.body;
             const reported = await reportedProduct.insertOne(reportProduct);
             res.send(reported);
