@@ -120,7 +120,6 @@ async function run() {
             const query = { category: name };
             const products = await productList.find(query).toArray()
             const soldProduct = products.filter(product => product.status === "Sold")
-            const findWishList = products.filter(product => product.productType === "WishList")
             const filterProducts = products.filter(product => !soldProduct.includes(product))
             res.send(filterProducts)
         })
@@ -141,7 +140,7 @@ async function run() {
         })
 
         //Get Admin User to Provide Access to Admin Only
-        app.get('/users/buyer/:email', verifyJWT, verifyBuyer, async (req, res) => {
+        app.get('/users/buyer/:email', async (req, res) => {
             const email = req.params.email;
             const query = { email };
             const user = await userCollection.findOne(query)
@@ -161,7 +160,9 @@ async function run() {
             const email = req.params.email;
             const query = { email: email };
             const myOrders = await bookingCollection.find(query).toArray();
-            res.send(myOrders)
+            const soldProduct = myOrders.filter(product => product.status === "Sold")
+            const filterProducts = myOrders.filter(product => !soldProduct.includes(product))
+            res.send(filterProducts)
         })
 
         //Get Advertise Products
@@ -348,6 +349,19 @@ async function run() {
             res.send(result)
         })
 
+        //Make Sold Buyer
+        app.patch('/makesoldproduct/:name', async (req, res) => {
+            const name = req.params.name;
+            const status = req.body;
+            const query = { name: name }
+            const updatedDoc = {
+                $set: {
+                    status: status.status
+                }
+            }
+            const result = await productList.updateOne(query, updatedDoc)
+            res.send(result)
+        })
         //Make Advertise
         app.patch('/makeadvertise/:id', verifyJWT, verifySeller, async (req, res) => {
             const id = req.params.id;
