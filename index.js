@@ -126,7 +126,7 @@ async function run() {
         })
 
         //Get User Detail
-        app.get('/users', async (req, res) => {
+        app.get('/users', verifyJWT, async (req, res) => {
             const query = {};
             const getUser = await userCollection.find(query).toArray()
             res.send(getUser)
@@ -141,14 +141,14 @@ async function run() {
         })
 
         //Get Admin User to Provide Access to Admin Only
-        app.get('/users/buyer/:email', async (req, res) => {
+        app.get('/users/buyer/:email', verifyJWT, verifyBuyer, async (req, res) => {
             const email = req.params.email;
             const query = { email };
             const user = await userCollection.findOne(query)
             res.send({ isBuyer: user?.role === 'Buyer' })
         })
 
-        //Get Seller User to Provide Access to Admin Only
+        //Get Seller User to Provide Access to Seller Only
         app.get('/users/seller/:email', async (req, res) => {
             const email = req.params.email;
             const query = { email };
@@ -157,7 +157,7 @@ async function run() {
         })
 
         //My Orders
-        app.get('/myorders/:email', verifyJWT, verifySeller, async (req, res) => {
+        app.get('/myorders/:email', verifyJWT, verifyBuyer, async (req, res) => {
             const email = req.params.email;
             const query = { email: email };
             const myOrders = await bookingCollection.find(query).toArray();
@@ -255,8 +255,11 @@ async function run() {
         //Store User Data
         app.post('/users', async (req, res) => {
             const user = req.body;
-            const result = await userCollection.insertOne(user)
-            res.send(result)
+            const alreadyExist = await userCollection.findOne({ email: user.email })
+            if (!alreadyExist) {
+                const users = await userCollection.insertOne(user)
+                res.send(users)
+            }
         })
 
         //Store New Products
@@ -287,7 +290,6 @@ async function run() {
             const wishList = req.body;
             const filter = { _id: ObjectId(id) }
             const email = req.params.email;
-            console.log(email)
             const options = { upsert: true };
             const updateDoc = {
                 $set: {
@@ -302,8 +304,11 @@ async function run() {
                     productType: "WishList"
                 }
             }
-            const resultWishList = await buyerWishList.updateOne(filter, updateDoc, options)
-            res.send(resultWishList);
+            const alreadyExist = await buyerWishList.findOne({ name: wishList.name })
+            if (!alreadyExist) {
+                const resultWishList = await buyerWishList.updateOne(filter, updateDoc, options)
+                res.send(resultWishList);
+            }
         })
 
         //Edit product
